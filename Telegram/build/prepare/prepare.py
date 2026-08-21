@@ -60,6 +60,7 @@ usedPrefix = os.path.realpath(os.path.join(libsDir, 'local'))
 optionsList = [
     'qt6',
     'skip-release',
+    'skip-breakpad',
     'build-stackwalk',
 ]
 options = []
@@ -1399,7 +1400,8 @@ depends:patches/breakpad.diff
     xcodebuild -project processor.xcodeproj -target minidump_stackwalk -configuration Release build
 """)
 
-stage('breakpad', """
+if not 'skip-breakpad' in options:
+    stage('breakpad', """
     git clone https://chromium.googlesource.com/breakpad/breakpad
     cd breakpad
     git checkout dfcb7b6799

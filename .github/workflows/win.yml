@@ -167,7 +167,7 @@ jobs:
 
       - name: Libraries.
         run: |
-          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ inputs.config == 'Debug' && 'skip-release' || ' ' }} silent ${{ matrix.qt }}
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ inputs.config == 'Debug' && 'skip-release' || ' ' }} skip-breakpad silent ${{ matrix.qt }}
 
       - name: Read configuration matrix.
         shell: bash
