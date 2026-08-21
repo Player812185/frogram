@@ -3,11 +3,6 @@ name: Windows.
 on:
   workflow_dispatch:
     inputs:
-      config:
-        description: 'Build configuration'
-        type: choice
-        options: [Debug, Release]
-        default: Release
       only_cache:
         description: 'Only build and cache the libraries, skip Frogram itself'
         type: boolean
@@ -66,7 +61,7 @@ jobs:
     env:
       UPLOAD_ARTIFACT: "true"
       ONLY_CACHE: ${{ inputs.only_cache && 'true' || 'false' }}
-      BUILD_CONFIG: ${{ inputs.config || 'Release' }}
+      BUILD_CONFIG: Debug
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
 
     defaults:
@@ -165,9 +160,30 @@ jobs:
           key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-${{ env.CACHE_KEY }}
           restore-keys: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-
 
+      - name: Free up disk space before the libraries.
+        shell: pwsh
+        run: |
+          $targets = @(
+            'C:\Android',
+            'C:\Program Files (x86)\Android',
+            'C:\Program Files\Microsoft SQL Server',
+            'C:\Program Files (x86)\Microsoft SQL Server',
+            'C:\hostedtoolcache\windows\Ruby',
+            'C:\hostedtoolcache\windows\go',
+            'C:\hostedtoolcache\windows\node'
+          )
+          foreach ($target in $targets) {
+            if (Test-Path $target) {
+              Remove-Item -Recurse -Force $target -ErrorAction SilentlyContinue
+            }
+          }
+          $drive = Get-PSDrive C
+          $free = [math]::Round($drive.Free / 1GB, 1)
+          Write-Host "Free space on C: $free GB"
+
       - name: Libraries.
         run: |
-          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ inputs.config == 'Debug' && 'skip-release' || ' ' }} skip-breakpad silent ${{ matrix.qt }}
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat skip-release skip-breakpad silent ${{ matrix.qt }}
 
       - name: Read configuration matrix.
         shell: bash
