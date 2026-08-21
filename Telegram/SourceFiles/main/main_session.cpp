@@ -49,6 +49,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_user.h"
 #include "data/data_download_manager.h"
 #include "data/stickers/data_stickers.h"
+#include "frogram/frogram_message_archive.h"
 #include "window/window_session_controller.h"
 #include "window/window_controller.h"
 #include "window/window_lock_widgets.h"
@@ -121,6 +122,7 @@ Session::Session(
 , _giftAuctions(std::make_unique<Data::GiftAuctions>(this))
 , _scheduledMessages(std::make_unique<Data::ScheduledMessages>(this))
 , _ephemeralMessages(std::make_unique<Data::EphemeralMessages>(this))
+, _frogramArchive(std::make_unique<Frogram::MessageArchive>(this))
 , _sponsoredMessages(std::make_unique<Data::SponsoredMessages>(this))
 , _topPeers(std::make_unique<Data::TopPeers>(this, Data::TopPeerType::Chat))
 , _topBotApps(
@@ -242,6 +244,8 @@ Session::Session(
 		local().readRecentMasks();
 		local().readFavedStickers();
 		local().readSavedGifs();
+	}, [=] {
+		local().readFrogramArchive();
 	}, [=] {
 		data().stickers().notifyUpdated(Data::StickersType::Stickers);
 		data().stickers().notifyUpdated(Data::StickersType::Masks);

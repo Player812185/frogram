@@ -74,6 +74,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_updates.h"
 #include "mtproto/mtproto_config.h"
 #include "history/history.h"
+#include "frogram/frogram_edit_history_box.h"
+#include "frogram/frogram_message_archive.h"
 #include "history/history_item_helpers.h" // GetErrorForSending.
 #include "history/history_item_components.h"
 #include "history/view/controls/history_view_forward_panel.h"
@@ -301,6 +303,7 @@ private:
 	void addToggleMuteSubmenu(bool addSeparator);
 	void addSupportInfo();
 	void addInfo();
+	void addFrogramArchive();
 	void addStoryArchive();
 	void addNewWindow(bool addSeparator = true);
 	void addUngroup();
@@ -646,6 +649,22 @@ void Filler::addInfo() {
 			}
 		}
 	}, infoPeer->isUser() ? &st::menuIconProfile : &st::menuIconInfo);
+}
+
+void Filler::addFrogramArchive() {
+	if (!_peer) {
+		return;
+	}
+	const auto controller = _controller;
+	const auto peerId = _peer->id;
+	const auto session = &_peer->session();
+	if (session->frogramArchive().list(peerId).empty()) {
+		return;
+	}
+	_addAction(tr::lng_frogram_view_archive(tr::now), [=] {
+		controller->show(
+			Box(Frogram::ArchivedPeerBox, controller, peerId));
+	}, &st::menuIconRestore);
 }
 
 void Filler::addStoryArchive() {
@@ -1869,6 +1888,7 @@ void Filler::fillHistoryActions() {
 	addToggleMuteSubmenu(true);
 	addCreateTopic();
 	addInfo();
+	addFrogramArchive();
 	addViewAsTopics();
 	addManageChat();
 	addStoryArchive();

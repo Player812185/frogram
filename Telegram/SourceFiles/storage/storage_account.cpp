@@ -104,6 +104,7 @@ enum { // Local Storage Keys
 	lskMediaLastPlaybackPositions = 0x1c, // no data
 	lskBotStorages = 0x1d, // data: PeerId botId
 	lskPrefs = 0x1e, // no data
+	lskFrogramArchive = 0x1f, // no data
 };
 
 auto EmptyMessageDraftSources()
@@ -271,6 +272,7 @@ base::flat_set<QString> Account::collectGoodNames() const {
 		_roundPlaceholderKey,
 		_inlineBotsDownloadsKey,
 		_mediaLastPlaybackPositionsKey,
+		_frogramArchiveKey,
 	};
 	auto result = base::flat_set<QString>{
 		"map0",
@@ -365,6 +367,7 @@ Account::ReadMapResult Account::readMapWith(
 	quint64 roundPlaceholderKey = 0;
 	quint64 inlineBotsDownloadsKey = 0;
 	quint64 mediaLastPlaybackPositionsKey = 0;
+	quint64 frogramArchiveKey = 0;
 	QByteArray webviewStorageTokenBots, webviewStorageTokenOther;
 	while (!map.stream.atEnd()) {
 		quint32 keyType;
@@ -477,6 +480,9 @@ Account::ReadMapResult Account::readMapWith(
 		case lskSearchSuggestions: {
 			map.stream >> searchSuggestionsKey;
 		} break;
+		case lskFrogramArchive: {
+			map.stream >> frogramArchiveKey;
+		} break;
 		case lskRoundPlaceholder: {
 			map.stream >> roundPlaceholderKey;
 		} break;
@@ -542,6 +548,7 @@ Account::ReadMapResult Account::readMapWith(
 	_recentHashtagsAndBotsKey = recentHashtagsAndBotsKey;
 	_exportSettingsKey = exportSettingsKey;
 	_searchSuggestionsKey = searchSuggestionsKey;
+	_frogramArchiveKey = frogramArchiveKey;
 	_roundPlaceholderKey = roundPlaceholderKey;
 	_inlineBotsDownloadsKey = inlineBotsDownloadsKey;
 	_mediaLastPlaybackPositionsKey = mediaLastPlaybackPositionsKey;
@@ -657,6 +664,7 @@ void Account::writeMap() {
 		mapSize += sizeof(quint32) + 3 * sizeof(quint64);
 	}
 	if (_searchSuggestionsKey) mapSize += sizeof(quint32) + sizeof(quint64);
+	if (_frogramArchiveKey) mapSize += sizeof(quint32) + sizeof(quint64);
 	if (!_webviewStorageIdBots.token.isEmpty()
 		|| !_webviewStorageIdOther.token.isEmpty()) {
 		mapSize += sizeof(quint32)
@@ -733,6 +741,10 @@ void Account::writeMap() {
 		mapData.stream << quint32(lskSearchSuggestions);
 		mapData.stream << quint64(_searchSuggestionsKey);
 	}
+	if (_frogramArchiveKey) {
+		mapData.stream << quint32(lskFrogramArchive);
+		mapData.stream << quint64(_frogramArchiveKey);
+	}
 	if (!_webviewStorageIdBots.token.isEmpty()
 		|| !_webviewStorageIdOther.token.isEmpty()) {
 		mapData.stream << quint32(lskWebviewTokens);
@@ -789,6 +801,7 @@ void Account::reset() {
 	_legacyBackgroundKeyDay = _legacyBackgroundKeyNight = 0;
 	_settingsKey = _recentHashtagsAndBotsKey = _exportSettingsKey = 0;
 	_searchSuggestionsKey = 0;
+	_frogramArchiveKey = 0;
 	_roundPlaceholderKey = 0;
 	_inlineBotsDownloadsKey = 0;
 	_mediaLastPlaybackPositionsKey = 0;
@@ -3276,6 +3289,62 @@ void Account::readSearchSuggestions() {
 		_owner->session().topGuestChatBots().applyLocal(guestChatBots);
 	} else {
 		DEBUG_LOG(("Suggestions: Could not read content."));
+	}
+}
+
+void Account::writeFrogramArchive() {
+	if (!_owner->sessionExists()) {
+		return;
+	}
+	const auto archive = _owner->session().frogramArchive().serialize();
+	if (archive.isEmpty()) {
+		if (_frogramArchiveKey) {
+			ClearKey(_frogramArchiveKey, _basePath);
+			_frogramArchiveKey = 0;
+			writeMapDelayed();
+		}
+		return;
+	}
+	if (!_frogramArchiveKey) {
+		_frogramArchiveKey = GenerateKey(_basePath);
+		writeMapQueued();
+	}
+	EncryptedDescriptor data(Serialize::bytearraySize(archive));
+	data.stream << archive;
+
+	FileWriteDescriptor file(_frogramArchiveKey, _basePath);
+	file.writeEncrypted(data, _localKey);
+}
+
+void Account::readFrogramArchive() {
+	if (_frogramArchiveRead) {
+		return;
+	}
+	_frogramArchiveRead = true;
+	if (!_frogramArchiveKey) {
+		DEBUG_LOG(("Frogram Info: No archive key."));
+		return;
+	}
+
+	FileReadDescriptor archive;
+	if (!ReadEncryptedFile(
+			archive,
+			_frogramArchiveKey,
+			_basePath,
+			_localKey)) {
+		DEBUG_LOG(("Frogram Error: Could not read archive file."));
+		ClearKey(_frogramArchiveKey, _basePath);
+		_frogramArchiveKey = 0;
+		writeMapDelayed();
+		return;
+	}
+
+	auto serialized = QByteArray();
+	archive.stream >> serialized;
+	if (CheckStreamStatus(archive.stream)) {
+		_owner->session().frogramArchive().applySerialized(serialized);
+	} else {
+		DEBUG_LOG(("Frogram Error: Could not read archive content."));
 	}
 }
 

@@ -20,6 +20,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history_item_helpers.h"
 #include "history/history_unread_things.h"
 #include "history/history.h"
+#include "frogram/frogram_message_archive.h"
 #include "iv/iv_data.h"
 #include "iv/editor/iv_editor_session.h"
 #include "iv/editor/iv_editor_state.h"
@@ -2195,6 +2196,8 @@ void HistoryItem::clearMainView() {
 }
 
 void HistoryItem::applyEdition(HistoryMessageEdition &&edition) {
+	_history->session().frogramArchive().noteEdition(this, edition);
+
 	int keyboardTop = -1;
 	//if (!pendingResize()) {// #TODO edit bot message
 	//	if (auto keyboard = inlineReplyKeyboard()) {

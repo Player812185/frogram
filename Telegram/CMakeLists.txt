@@ -876,6 +876,12 @@ PRIVATE
     export/view/export_view_settings.h
     export/view/export_view_top_bar.cpp
     export/view/export_view_top_bar.h
+    frogram/frogram_edit_history_box.cpp
+    frogram/frogram_edit_history_box.h
+    frogram/frogram_message_archive.cpp
+    frogram/frogram_message_archive.h
+    frogram/frogram_settings.cpp
+    frogram/frogram_settings.h
     history/admin_log/history_admin_log_filter.cpp
     history/admin_log/history_admin_log_filter.h
     history/admin_log/history_admin_log_inner.cpp
@@ -1788,6 +1794,8 @@ PRIVATE
     settings/settings_experimental.h
     settings/sections/settings_folders.cpp
     settings/sections/settings_folders.h
+    settings/sections/settings_frogram.cpp
+    settings/sections/settings_frogram.h
     settings/sections/settings_global_ttl.cpp
     settings/sections/settings_global_ttl.h
     settings/sections/settings_information.cpp

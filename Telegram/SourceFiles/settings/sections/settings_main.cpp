@@ -53,6 +53,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/settings_faq_suggestions.h"
 #include "settings/sections/settings_credits.h"
 #include "settings/sections/settings_folders.h"
+#include "settings/sections/settings_frogram.h"
 #include "settings/sections/settings_information.h"
 #include "settings/sections/settings_notifications.h"
 #include "settings/settings_power_saving.h"
@@ -432,6 +433,13 @@ void BuildSectionButtons(SectionBuilder &builder) {
 		.targetSection = AdvancedId(),
 		.icon = { &st::menuIconManage },
 		.keywords = { u"performance"_q, u"proxy"_q, u"experimental"_q },
+	});
+
+	builder.addSectionButton({
+		.title = tr::lng_frogram_settings_title(),
+		.targetSection = FrogramId(),
+		.icon = { &st::menuIconRestore },
+		.keywords = { u"frogram"_q, u"deleted"_q, u"edits"_q, u"history"_q },
 	});
 
 	builder.addSectionButton({

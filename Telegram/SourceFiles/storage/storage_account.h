@@ -159,6 +159,9 @@ public:
 	void writeSearchSuggestions();
 	void readSearchSuggestions();
 
+	void writeFrogramArchive();
+	void readFrogramArchive();
+
 	void writeSelf();
 
 	// Read self is special, it can't get session from account, because
@@ -359,6 +362,7 @@ private:
 	FileKey _roundPlaceholderKey = 0;
 	FileKey _inlineBotsDownloadsKey = 0;
 	FileKey _mediaLastPlaybackPositionsKey = 0;
+	FileKey _frogramArchiveKey = 0;
 
 	qint64 _cacheTotalSizeLimit = 0;
 	qint64 _cacheBigFileTotalSizeLimit = 0;
@@ -371,6 +375,7 @@ private:
 	bool _readingUserSettings = false;
 	bool _recentHashtagsAndBotsWereRead = false;
 	bool _searchSuggestionsRead = false;
+	bool _frogramArchiveRead = false;
 	bool _inlineBotsDownloadsRead = false;
 	bool _mediaLastPlaybackPositionsRead = false;
 

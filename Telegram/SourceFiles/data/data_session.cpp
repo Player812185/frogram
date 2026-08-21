@@ -28,6 +28,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "mtproto/mtproto_config.h"
 #include "window/notifications_manager.h"
 #include "history/history.h"
+#include "frogram/frogram_message_archive.h"
 #include "history/history_item.h"
 #include "history/history_item_components.h"
 #include "history/history_streamed_drafts.h"
@@ -3107,10 +3108,15 @@ void Session::processMessagesDeleted(
 
 	auto toDestroy = std::vector<not_null<HistoryItem*>>();
 	auto historiesToCheck = base::flat_set<not_null<History*>>();
+	auto &archive = _session->frogramArchive();
 	for (const auto &messageId : data) {
 		const auto i = list ? list->find(messageId.v) : Messages::iterator();
 		if (list && i != list->end()) {
 			const auto history = i->second->history();
+			if (archive.interceptDeletion(i->second)) {
+				requestItemViewRefresh(i->second);
+				continue;
+			}
 			toDestroy.push_back(i->second);
 			historiesToCheck.emplace(history);
 		} else if (affected) {
@@ -3133,9 +3139,14 @@ void Session::processMessagesDeleted(
 void Session::processNonChannelMessagesDeleted(const QVector<MTPint> &data) {
 	auto toDestroy = std::vector<not_null<HistoryItem*>>();
 	auto historiesToCheck = base::flat_set<not_null<History*>>();
+	auto &archive = _session->frogramArchive();
 	for (const auto &messageId : data) {
 		if (const auto item = nonChannelMessage(messageId.v)) {
 			const auto history = item->history();
+			if (archive.interceptDeletion(item)) {
+				requestItemViewRefresh(item);
+				continue;
+			}
 			toDestroy.push_back(item);
 			historiesToCheck.emplace(history);
 		}

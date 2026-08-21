@@ -22,6 +22,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/history_view_list_widget.h"
 #include "history/view/history_view_cursor_state.h"
 #include "history/history.h"
+#include "frogram/frogram_edit_history_box.h"
 #include "history/history_item.h"
 #include "history/history_item_components.h"
 #include "history/history_item_helpers.h"
@@ -1115,10 +1116,30 @@ void AddTopMessageActions(
 	AddPinMessageAction(menu, request, list);
 }
 
+void AddFrogramArchiveAction(
+		not_null<Ui::PopupMenu*> menu,
+		const ContextMenuRequest &request,
+		not_null<ListWidget*> list) {
+	const auto item = request.item;
+	if (!item || !request.selectedItems.empty()) {
+		return;
+	}
+	const auto itemId = item->fullId();
+	const auto session = &item->history()->session();
+	if (!Frogram::HasArchiveEntry(session, itemId)) {
+		return;
+	}
+	const auto controller = list->controller();
+	menu->addAction(tr::lng_frogram_view_history(tr::now), [=] {
+		controller->show(Box(Frogram::EditHistoryBox, session, itemId));
+	}, &st::menuIconRestore);
+}
+
 void AddMessageActions(
 		not_null<Ui::PopupMenu*> menu,
 		const ContextMenuRequest &request,
 		not_null<ListWidget*> list) {
+	AddFrogramArchiveAction(menu, request, list);
 	AddPostLinkAction(menu, request);
 	AddForwardAction(menu, request, list);
 	AddSendNowAction(menu, request, list);

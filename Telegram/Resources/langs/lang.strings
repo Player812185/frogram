@@ -8618,4 +8618,34 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_sr_languages_column_native" = "Native name";
 "lng_sr_languages_column_name" = "Language name";
 
+"lng_frogram_title" = "Frogram";
+"lng_frogram_settings_title" = "Frogram";
+"lng_frogram_deleted_badge" = "deleted";
+"lng_frogram_edit_history_title" = "Edit history";
+"lng_frogram_no_versions" = "No saved versions for this message.";
+"lng_frogram_empty_message" = "Empty message";
+"lng_frogram_version_original" = "Original, {date}";
+"lng_frogram_version_edited" = "Edited, {date}";
+"lng_frogram_version_current" = "Current version, {date}";
+"lng_frogram_version_deleted" = "Deleted {date}";
+"lng_frogram_status_deleted" = "deleted {date}";
+"lng_frogram_status_edited" = "edited {date}";
+"lng_frogram_archive_empty" = "Nothing saved for this chat yet.";
+"lng_frogram_view_history" = "Edit history";
+"lng_frogram_view_archive" = "Saved messages history";
+"lng_frogram_save_deleted" = "Keep deleted messages";
+"lng_frogram_save_deleted_about" = "Deleted messages stay visible in chats and are stored locally.";
+"lng_frogram_save_edits" = "Keep message edits";
+"lng_frogram_save_edits_about" = "Every edit is stored locally, so you can read previous versions.";
+"lng_frogram_keep_in_chat" = "Show deleted messages in chats";
+"lng_frogram_keep_in_chat_about" = "When off, deleted messages disappear from the chat but stay in the archive.";
+"lng_frogram_skip_outgoing" = "Skip my own messages";
+"lng_frogram_skip_channels" = "Skip channels";
+"lng_frogram_archive_section" = "Archive";
+"lng_frogram_archive_count#one" = "{count} message saved";
+"lng_frogram_archive_count#other" = "{count} messages saved";
+"lng_frogram_clear_archive" = "Clear saved messages";
+"lng_frogram_clear_archive_sure" = "Delete all locally saved messages and edit history?";
+"lng_frogram_cleared" = "Frogram archive cleared.";
+
 // Keys finished

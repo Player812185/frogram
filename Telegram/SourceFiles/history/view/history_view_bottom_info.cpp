@@ -23,6 +23,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/media/history_view_media.h"
 #include "history/view/history_view_message.h"
 #include "history/view/history_view_cursor_state.h"
+#include "frogram/frogram_message_archive.h"
 #include "base/unixtime.h"
 #include "chat_helpers/emoji_interactions.h"
 #include "core/click_handler_types.h"
@@ -151,6 +152,7 @@ int BottomInfo::firstLineWidth() const {
 
 bool BottomInfo::isWide() const {
 	return (_data.flags & Data::Flag::Edited)
+		|| (_data.flags & Data::Flag::Deleted)
 		|| _data.scheduleRepeatPeriod
 		|| !_data.author.isEmpty()
 		|| !_views.isEmpty()
@@ -493,13 +495,16 @@ void BottomInfo::layoutDateText() {
 		: _data.scheduleRepeatPeriod
 		? (SchedulePeriodText(_data.scheduleRepeatPeriod) + ' ')
 		: QString();
+	const auto deleted = (_data.flags & Data::Flag::Deleted)
+		? (tr::lng_frogram_deleted_badge(tr::now) + ' ')
+		: QString();
 	const auto author = _data.author;
 	const auto prefix = !author.isEmpty() ? u", "_q : QString();
-	const auto date = editedPrimary
+	const auto date = deleted + (editedPrimary
 		? FormatEditedDate(_data.date, _data.editedDate)
 		: edited + ((_data.flags & Data::Flag::ForwardedDate)
 		? Ui::FormatDateTimeSavedFrom(_data.date)
-		: QLocale().toString(_data.date.time(), QLocale::ShortFormat));
+		: QLocale().toString(_data.date.time(), QLocale::ShortFormat)));
 	const auto afterAuthor = prefix + date;
 	const auto afterAuthorWidth = st::msgDateFont->width(afterAuthor);
 	const auto authorWidth = st::msgDateFont->width(author);
@@ -682,6 +687,9 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 				result.author = msgsigned->author;
 			}
 		}
+	}
+	if (item->history()->session().frogramArchive().deleted(item->fullId())) {
+		result.flags |= Flag::Deleted;
 	}
 	if (const auto editedDate = message->displayedEditDate()) {
 		result.flags |= Flag::Edited;

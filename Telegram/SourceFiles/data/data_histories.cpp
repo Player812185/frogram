@@ -26,6 +26,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_session.h"
 #include "window/notifications_manager.h"
 #include "history/history.h"
+#include "frogram/frogram_message_archive.h"
 #include "history/history_item.h"
 #include "history/history_item_helpers.h"
 #include "history/view/history_view_element.h"
@@ -938,6 +939,8 @@ void Histories::deleteMessagesByDates(
 }
 
 void Histories::deleteMessages(const MessageIdsList &ids, bool revoke) {
+	_owner->session().frogramArchive().noteDeletedByUs(ids);
+
 	auto remove = std::vector<not_null<HistoryItem*>>();
 	remove.reserve(ids.size());
 	base::flat_map<not_null<History*>, QVector<MTPint>> idsByPeer;

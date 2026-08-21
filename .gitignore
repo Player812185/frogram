@@ -72,3 +72,6 @@ settings.local.json
 
 # Generated changelog page (built by CI, deployed to GitHub Pages)
 /docs/changelog/
+
+# CodeGraph index (local tooling, not for version control)
+.codegraph/

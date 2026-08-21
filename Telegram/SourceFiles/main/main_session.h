@@ -52,6 +52,10 @@ class FaqSuggestions;
 class RecentSearches;
 } // namespace Settings
 
+namespace Frogram {
+class MessageArchive;
+} // namespace Frogram
+
 namespace HistoryView::Reactions {
 class CachedIconFactory;
 } // namespace HistoryView::Reactions
@@ -160,6 +164,9 @@ public:
 	}
 	[[nodiscard]] Data::EphemeralMessages &ephemeralMessages() const {
 		return *_ephemeralMessages;
+	}
+	[[nodiscard]] Frogram::MessageArchive &frogramArchive() const {
+		return *_frogramArchive;
 	}
 	[[nodiscard]] Data::TopPeers &topPeers() const {
 		return *_topPeers;
@@ -328,6 +335,7 @@ private:
 	const std::unique_ptr<Data::GiftAuctions> _giftAuctions;
 	const std::unique_ptr<Data::ScheduledMessages> _scheduledMessages;
 	const std::unique_ptr<Data::EphemeralMessages> _ephemeralMessages;
+	const std::unique_ptr<Frogram::MessageArchive> _frogramArchive;
 	const std::unique_ptr<Data::SponsoredMessages> _sponsoredMessages;
 	const std::unique_ptr<Data::TopPeers> _topPeers;
 	const std::unique_ptr<Data::TopPeers> _topBotApps;
