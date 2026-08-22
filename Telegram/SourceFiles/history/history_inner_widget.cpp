@@ -14,6 +14,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/click_handler_types.h"
 #include "core/phone_click_handler.h"
 #include "data/data_chat_participant_status.h"
+#include "frogram/frogram_edit_history_box.h"
 #include "history/history_item_helpers.h"
 #include "history/view/controls/history_view_forward_panel.h"
 #include "history/view/controls/history_view_draft_options.h"
@@ -3169,6 +3170,18 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 				mapFromGlobal(_mousePosition),
 				Element::Moused())
 		) != HistoryView::PointState::GroupPart);
+	const auto addFrogramArchiveAction = [&](HistoryItem *item) {
+		if (!item) {
+			return;
+		}
+		const auto itemId = item->fullId();
+		if (!Frogram::HasArchiveEntry(session, itemId)) {
+			return;
+		}
+		_menu->addAction(tr::lng_frogram_view_history(tr::now), [=] {
+			_controller->show(Box(Frogram::EditHistoryBox, session, itemId));
+		}, &st::menuIconRestore);
+	};
 	const auto addSelectMessageAction = [&](not_null<HistoryItem*> item) {
 		if (item->canBeSelected()
 			&& !hasSelectRestriction()
@@ -3462,6 +3475,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 					_controller->uiShow(),
 					item);
 			}
+			addFrogramArchiveAction(item);
 			addSelectMessageAction(item);
 			if (isUponSelected != -2) {
 				HistoryView::AddEphemeralAboutAction(_menu, item);
@@ -3772,6 +3786,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 					_controller->uiShow(),
 					item);
 			}
+			addFrogramArchiveAction(partItemOrLeader);
 			addSelectMessageAction(partItemOrLeader);
 			if (isUponSelected != -2) {
 				HistoryView::AddEphemeralAboutAction(_menu, item);
@@ -3782,6 +3797,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 				}, &st::menuIconBlock);
 			}
 		} else if (Element::Moused()) {
+			addFrogramArchiveAction(Element::Moused()->data());
 			addSelectMessageAction(Element::Moused()->data());
 		}
 	}
