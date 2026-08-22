@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/serialize_common.h"
 #include "storage/serialize_peer.h"
 #include "storage/serialize_document.h"
+#include "frogram/frogram_message_archive.h"
 #include "main/main_account.h"
 #include "main/main_domain.h"
 #include "main/main_session.h"
