@@ -69,6 +69,12 @@ namespace {
 	return map.back().text;
 }
 
+[[nodiscard]] int IconEmojiWidth(const style::IconEmoji &emoji) {
+	return emoji.padding.left()
+		+ emoji.icon.width()
+		+ emoji.padding.right();
+}
+
 [[nodiscard]] QString FormatEditedDate(QDateTime sent, QDateTime edited) {
 	const auto today = QDateTime::currentDateTime().date();
 	const auto time = QLocale().toString(edited.time(), QLocale::ShortFormat);
@@ -486,27 +492,30 @@ void BottomInfo::layout() {
 void BottomInfo::layoutDateText() {
 	const auto editedPrimary = (_data.flags & Data::Flag::EditedPrimary)
 		&& !(_data.flags & Data::Flag::ForwardedDate);
-	const auto edited = editedPrimary
+	const auto editedIcon = !editedPrimary
+		&& (_data.flags & Data::Flag::Edited);
+	const auto deletedIcon = (_data.flags & Data::Flag::Deleted);
+	const auto edited = (editedPrimary || editedIcon)
 		? QString()
-		: (_data.flags & Data::Flag::Edited)
-		? (tr::lng_edited(tr::now) + ' ')
 		: (_data.flags & Data::Flag::EstimateDate)
 		? (tr::lng_approximate(tr::now) + ' ')
 		: _data.scheduleRepeatPeriod
 		? (SchedulePeriodText(_data.scheduleRepeatPeriod) + ' ')
 		: QString();
-	const auto deleted = (_data.flags & Data::Flag::Deleted)
-		? (tr::lng_frogram_deleted_badge(tr::now) + ' ')
-		: QString();
 	const auto author = _data.author;
 	const auto prefix = !author.isEmpty() ? u", "_q : QString();
-	const auto date = deleted + (editedPrimary
+	const auto date = editedPrimary
 		? FormatEditedDate(_data.date, _data.editedDate)
 		: edited + ((_data.flags & Data::Flag::ForwardedDate)
 		? Ui::FormatDateTimeSavedFrom(_data.date)
-		: QLocale().toString(_data.date.time(), QLocale::ShortFormat)));
+		: QLocale().toString(_data.date.time(), QLocale::ShortFormat));
+	const auto iconsWidth = (deletedIcon
+		? IconEmojiWidth(st::historyDeletedIconEmoji)
+		: 0)
+		+ (editedIcon ? IconEmojiWidth(st::historyEditedIconEmoji) : 0);
 	const auto afterAuthor = prefix + date;
-	const auto afterAuthorWidth = st::msgDateFont->width(afterAuthor);
+	const auto afterAuthorWidth = st::msgDateFont->width(afterAuthor)
+		+ iconsWidth;
 	const auto authorWidth = st::msgDateFont->width(author);
 	const auto maxWidth = st::maxSignatureSize;
 	_authorElided = !author.isEmpty()
@@ -514,13 +523,6 @@ void BottomInfo::layoutDateText() {
 	const auto name = _authorElided
 		? st::msgDateFont->elided(author, maxWidth - afterAuthorWidth)
 		: author;
-	const auto full = (_data.flags & Data::Flag::Sponsored)
-		? QString()
-		: (_data.flags & Data::Flag::Imported)
-		? (date + ' ' + tr::lng_imported(tr::now))
-		: name.isEmpty()
-		? date
-		: (name + afterAuthor);
 	auto helper = Ui::Text::CustomEmojiHelper(
 		Core::TextContext({ .session = &_reactionsOwner->session() }));
 	auto marked = TextWithEntities();
@@ -542,7 +544,26 @@ void BottomInfo::layoutDateText() {
 			.textColor = false,
 		})).append("  ");
 	}
-	marked.append(full);
+	if (!(_data.flags & Data::Flag::Sponsored)) {
+		const auto imported = (_data.flags & Data::Flag::Imported);
+		if (!imported && !name.isEmpty()) {
+			marked.append(name).append(prefix);
+		}
+		if (deletedIcon) {
+			marked.append(
+				st::historyDeletedIconEmoji,
+				tr::lng_frogram_deleted_badge(tr::now));
+		}
+		if (editedIcon) {
+			marked.append(
+				st::historyEditedIconEmoji,
+				tr::lng_edited(tr::now));
+		}
+		marked.append(date);
+		if (imported) {
+			marked.append(' ').append(tr::lng_imported(tr::now));
+		}
+	}
 	_authorEditedDate.setMarkedText(
 		st::msgDateTextStyle,
 		marked,

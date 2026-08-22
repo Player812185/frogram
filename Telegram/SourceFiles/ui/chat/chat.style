@@ -241,6 +241,15 @@ historyPinTop: -18px;
 historySilentWidth: 12px;
 historySilentTop: -13px;
 
+historyEditedIconEmoji: IconEmoji {
+	icon: icon{{ "chat/mini_edited", msgInDateFg }};
+	padding: margins(0px, 2px, 3px, 0px);
+}
+historyDeletedIconEmoji: IconEmoji {
+	icon: icon{{ "chat/mini_deleted", msgInDateFg }};
+	padding: margins(0px, 2px, 3px, 0px);
+}
+
 historyBotMenuSkip: 8px;
 historyBotMenuMaxWidth: 160px;
 historyBotMenuButton: RoundButton(defaultActiveButton) {
