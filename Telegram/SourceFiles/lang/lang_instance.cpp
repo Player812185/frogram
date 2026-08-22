@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "lang/lang_instance.h"
 
 #include "core/application.h"
+#include "frogram/frogram_lang.h"
 #include "storage/serialize_common.h"
 #include "storage/localstorage.h"
 #include "ui/boxes/confirm_box.h"
@@ -299,9 +300,20 @@ void Instance::reset(const Language &data) {
 		_values[i] = GetOriginalValue(ushort(i));
 	}
 	ranges::fill(_nonDefaultSet, 0);
+	applyFrogramPack();
 	updateChoosingStickerReplacement();
 
 	_idChanges.fire_copy(_id);
+}
+
+void Instance::applyFrogramPack() {
+	if (_derived) {
+		return;
+	}
+	const auto content = Frogram::LanguagePack(LanguageIdOrDefault(_id));
+	if (!content.isEmpty()) {
+		loadFromContent(content);
+	}
 }
 
 QString Instance::systemLangCode() const {
@@ -544,6 +556,7 @@ void Instance::fillFromSerialized(
 	for (auto i = 0, count = nonDefaultValuesCount * 2; i != count; i += 2) {
 		applyValue(nonDefaultStrings[i], nonDefaultStrings[i + 1]);
 	}
+	applyFrogramPack();
 	updatePluralRules();
 	updateChoosingStickerReplacement();
 

@@ -1,0 +1,38 @@
+/*
+This file is part of Frogram,
+a modification of Telegram Desktop.
+
+For license and copyright information please follow this link:
+https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
+*/
+"lng_frogram_title" = "Frogram";
+"lng_frogram_settings_title" = "Frogram";
+"lng_frogram_deleted_badge" = "удалено";
+"lng_frogram_edit_history_title" = "История изменений";
+"lng_frogram_no_versions" = "Для этого сообщения нет сохранённых версий.";
+"lng_frogram_empty_message" = "Пустое сообщение";
+"lng_frogram_version_original" = "Оригинал, {date}";
+"lng_frogram_version_edited" = "Изменено, {date}";
+"lng_frogram_version_current" = "Текущая версия, {date}";
+"lng_frogram_version_deleted" = "Удалено {date}";
+"lng_frogram_status_deleted" = "удалено {date}";
+"lng_frogram_status_edited" = "изменено {date}";
+"lng_frogram_archive_empty" = "Для этого чата пока ничего не сохранено.";
+"lng_frogram_view_history" = "История изменений";
+"lng_frogram_view_archive" = "Архив сохранённых сообщений";
+"lng_frogram_save_deleted" = "Сохранять удалённые сообщения";
+"lng_frogram_save_deleted_about" = "Удалённые сообщения остаются видны в чатах и хранятся на этом устройстве.";
+"lng_frogram_save_edits" = "Сохранять изменения сообщений";
+"lng_frogram_save_edits_about" = "Каждая правка сохраняется на этом устройстве, поэтому прежние версии можно перечитать.";
+"lng_frogram_keep_in_chat" = "Показывать удалённые сообщения в чатах";
+"lng_frogram_keep_in_chat_about" = "Если выключено, удалённые сообщения исчезают из чата, но остаются в архиве.";
+"lng_frogram_skip_outgoing" = "Пропускать мои сообщения";
+"lng_frogram_skip_channels" = "Пропускать каналы";
+"lng_frogram_archive_section" = "Архив";
+"lng_frogram_archive_count#one" = "Сохранено {count} сообщение";
+"lng_frogram_archive_count#few" = "Сохранено {count} сообщения";
+"lng_frogram_archive_count#many" = "Сохранено {count} сообщений";
+"lng_frogram_archive_count#other" = "Сохранено {count} сообщения";
+"lng_frogram_clear_archive" = "Очистить сохранённые сообщения";
+"lng_frogram_clear_archive_sure" = "Удалить все сохранённые сообщения и историю изменений?";
+"lng_frogram_cleared" = "Архив Frogram очищен.";

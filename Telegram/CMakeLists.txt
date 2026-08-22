@@ -878,6 +878,8 @@ PRIVATE
     export/view/export_view_top_bar.h
     frogram/frogram_edit_history_box.cpp
     frogram/frogram_edit_history_box.h
+    frogram/frogram_lang.cpp
+    frogram/frogram_lang.h
     frogram/frogram_message_archive.cpp
     frogram/frogram_message_archive.h
     frogram/frogram_settings.cpp
