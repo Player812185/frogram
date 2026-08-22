@@ -117,5 +117,16 @@
     <file alias="swipe_ungroup.tgs">../../animations/swipe_action/ungroup.tgs</file>
     <file alias="craft_progress.tgs">../../animations/craft_progress.tgs</file>
     <file alias="cleaning_cache.tgs">../../animations/cleaning_cache.tgs</file>
+    <file alias="frogram/gifts/5800655655995968830.tgs">../../animations/frogram/gifts/5800655655995968830.tgs</file>
+    <file alias="frogram/gifts/5801108895304779062.tgs">../../animations/frogram/gifts/5801108895304779062.tgs</file>
+    <file alias="frogram/gifts/5866352046986232958.tgs">../../animations/frogram/gifts/5866352046986232958.tgs</file>
+    <file alias="frogram/gifts/5893356958802511476.tgs">../../animations/frogram/gifts/5893356958802511476.tgs</file>
+    <file alias="frogram/gifts/5922558454332916696.tgs">../../animations/frogram/gifts/5922558454332916696.tgs</file>
+    <file alias="frogram/gifts/5935895822435615975.tgs">../../animations/frogram/gifts/5935895822435615975.tgs</file>
+    <file alias="frogram/gifts/5956217000635139069.tgs">../../animations/frogram/gifts/5956217000635139069.tgs</file>
+    <file alias="frogram/gifts/5969796561943660080.tgs">../../animations/frogram/gifts/5969796561943660080.tgs</file>
+    <file alias="frogram/gifts/5974210632977745012.tgs">../../animations/frogram/gifts/5974210632977745012.tgs</file>
+    <file alias="frogram/gifts/6026193266406327981.tgs">../../animations/frogram/gifts/6026193266406327981.tgs</file>
+    <file alias="frogram/gifts/6046178578163303744.tgs">../../animations/frogram/gifts/6046178578163303744.tgs</file>
   </qresource>
 </RCC>

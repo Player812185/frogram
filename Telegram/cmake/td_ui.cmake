@@ -62,6 +62,7 @@ set(style_files
     info/channel_statistics/earn/channel_earn.style
     info/profile/info_levels.style
     info/userpic/info_userpic_builder.style
+    frogram/frogram.style
     intro/intro.style
     iv/iv.style
     media/player/media_player.style

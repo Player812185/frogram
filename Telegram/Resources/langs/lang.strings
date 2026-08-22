@@ -8647,5 +8647,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_frogram_clear_archive" = "Clear saved messages";
 "lng_frogram_clear_archive_sure" = "Delete all locally saved messages and edit history?";
 "lng_frogram_cleared" = "Frogram archive cleared.";
+"lng_frogram_hidden_gifts" = "Hidden gifts";
+"lng_frogram_hidden_gifts_about" = "Seasonal gifts Telegram removes from the catalog after the holiday. {name} can still receive them.";
+"lng_frogram_hidden_gift_custom" = "Any gift by ID";
+"lng_frogram_hidden_gift_custom_placeholder" = "Gift ID";
+"lng_frogram_hidden_gift_custom_send" = "Send this gift";
+"lng_frogram_hidden_gift_custom_about" = "Enter the numeric ID of any gift to send it, even when it is missing from the catalog.";
+"lng_frogram_hidden_gift_bad_id" = "Enter a valid gift ID.";
 
 // Keys finished

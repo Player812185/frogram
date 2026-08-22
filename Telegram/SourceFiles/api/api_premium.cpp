@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_peer_values.h"
 #include "data/data_session.h"
 #include "data/data_user.h"
+#include "frogram/frogram_gift_catalog.h"
 #include "history/view/history_view_element.h"
 #include "history/history.h"
 #include "history/history_item.h"
@@ -669,6 +670,7 @@ auto PremiumGiftCodeOptions::requestStarGifts()
 						gifts.push_back(std::move(*parsed));
 					}
 				}
+				session->frogramGifts().remember(gifts);
 				_gifts = std::move(gifts);
 			}, [&](const MTPDpayments_starGiftsNotModified &) {
 			});

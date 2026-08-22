@@ -21,6 +21,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_document_media.h"
 #include "data/data_session.h"
 #include "data/data_user.h"
+#include "frogram/frogram_gift_catalog.h"
 #include "history/view/media/history_view_sticker_player.h"
 #include "lang/lang_keys.h"
 #include "info/channel_statistics/earn/earn_icons.h"
@@ -139,6 +140,9 @@ rpl::producer<std::vector<GiftTypeStars>> GiftsStars(
 				if (gift.resellCount > 0) {
 					list.push_back({ .info = gift, .resale = true });
 				}
+			}
+			for (auto &gift : session->frogramGifts().missingFrom(gifts)) {
+				list.push_back({ .info = std::move(gift) });
 			}
 			ranges::stable_sort(list, [](const auto &a, const auto &b) {
 				const auto soldOut = [](const auto &gift) {

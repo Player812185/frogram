@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/serialize_common.h"
 #include "storage/serialize_peer.h"
 #include "storage/serialize_document.h"
+#include "frogram/frogram_gift_catalog.h"
 #include "frogram/frogram_message_archive.h"
 #include "main/main_account.h"
 #include "main/main_domain.h"
@@ -106,6 +107,7 @@ enum { // Local Storage Keys
 	lskBotStorages = 0x1d, // data: PeerId botId
 	lskPrefs = 0x1e, // no data
 	lskFrogramArchive = 0x1f, // no data
+	lskFrogramGifts = 0x20, // no data
 };
 
 auto EmptyMessageDraftSources()
@@ -274,6 +276,7 @@ base::flat_set<QString> Account::collectGoodNames() const {
 		_inlineBotsDownloadsKey,
 		_mediaLastPlaybackPositionsKey,
 		_frogramArchiveKey,
+		_frogramGiftsKey,
 	};
 	auto result = base::flat_set<QString>{
 		"map0",
@@ -369,6 +372,7 @@ Account::ReadMapResult Account::readMapWith(
 	quint64 inlineBotsDownloadsKey = 0;
 	quint64 mediaLastPlaybackPositionsKey = 0;
 	quint64 frogramArchiveKey = 0;
+	quint64 frogramGiftsKey = 0;
 	QByteArray webviewStorageTokenBots, webviewStorageTokenOther;
 	while (!map.stream.atEnd()) {
 		quint32 keyType;
@@ -484,6 +488,9 @@ Account::ReadMapResult Account::readMapWith(
 		case lskFrogramArchive: {
 			map.stream >> frogramArchiveKey;
 		} break;
+		case lskFrogramGifts: {
+			map.stream >> frogramGiftsKey;
+		} break;
 		case lskRoundPlaceholder: {
 			map.stream >> roundPlaceholderKey;
 		} break;
@@ -550,6 +557,7 @@ Account::ReadMapResult Account::readMapWith(
 	_exportSettingsKey = exportSettingsKey;
 	_searchSuggestionsKey = searchSuggestionsKey;
 	_frogramArchiveKey = frogramArchiveKey;
+	_frogramGiftsKey = frogramGiftsKey;
 	_roundPlaceholderKey = roundPlaceholderKey;
 	_inlineBotsDownloadsKey = inlineBotsDownloadsKey;
 	_mediaLastPlaybackPositionsKey = mediaLastPlaybackPositionsKey;
@@ -666,6 +674,7 @@ void Account::writeMap() {
 	}
 	if (_searchSuggestionsKey) mapSize += sizeof(quint32) + sizeof(quint64);
 	if (_frogramArchiveKey) mapSize += sizeof(quint32) + sizeof(quint64);
+	if (_frogramGiftsKey) mapSize += sizeof(quint32) + sizeof(quint64);
 	if (!_webviewStorageIdBots.token.isEmpty()
 		|| !_webviewStorageIdOther.token.isEmpty()) {
 		mapSize += sizeof(quint32)
@@ -746,6 +755,10 @@ void Account::writeMap() {
 		mapData.stream << quint32(lskFrogramArchive);
 		mapData.stream << quint64(_frogramArchiveKey);
 	}
+	if (_frogramGiftsKey) {
+		mapData.stream << quint32(lskFrogramGifts);
+		mapData.stream << quint64(_frogramGiftsKey);
+	}
 	if (!_webviewStorageIdBots.token.isEmpty()
 		|| !_webviewStorageIdOther.token.isEmpty()) {
 		mapData.stream << quint32(lskWebviewTokens);
@@ -803,6 +816,7 @@ void Account::reset() {
 	_settingsKey = _recentHashtagsAndBotsKey = _exportSettingsKey = 0;
 	_searchSuggestionsKey = 0;
 	_frogramArchiveKey = 0;
+	_frogramGiftsKey = 0;
 	_roundPlaceholderKey = 0;
 	_inlineBotsDownloadsKey = 0;
 	_mediaLastPlaybackPositionsKey = 0;
@@ -3346,6 +3360,62 @@ void Account::readFrogramArchive() {
 		_owner->session().frogramArchive().applySerialized(serialized);
 	} else {
 		DEBUG_LOG(("Frogram Error: Could not read archive content."));
+	}
+}
+
+void Account::writeFrogramGifts() {
+	if (!_owner->sessionExists()) {
+		return;
+	}
+	const auto gifts = _owner->session().frogramGifts().serialize();
+	if (gifts.isEmpty()) {
+		if (_frogramGiftsKey) {
+			ClearKey(_frogramGiftsKey, _basePath);
+			_frogramGiftsKey = 0;
+			writeMapDelayed();
+		}
+		return;
+	}
+	if (!_frogramGiftsKey) {
+		_frogramGiftsKey = GenerateKey(_basePath);
+		writeMapQueued();
+	}
+	EncryptedDescriptor data(Serialize::bytearraySize(gifts));
+	data.stream << gifts;
+
+	FileWriteDescriptor file(_frogramGiftsKey, _basePath);
+	file.writeEncrypted(data, _localKey);
+}
+
+void Account::readFrogramGifts() {
+	if (_frogramGiftsRead) {
+		return;
+	}
+	_frogramGiftsRead = true;
+	if (!_frogramGiftsKey) {
+		DEBUG_LOG(("Frogram Info: No gift catalog key."));
+		return;
+	}
+
+	FileReadDescriptor gifts;
+	if (!ReadEncryptedFile(
+			gifts,
+			_frogramGiftsKey,
+			_basePath,
+			_localKey)) {
+		DEBUG_LOG(("Frogram Error: Could not read gift catalog file."));
+		ClearKey(_frogramGiftsKey, _basePath);
+		_frogramGiftsKey = 0;
+		writeMapDelayed();
+		return;
+	}
+
+	auto serialized = QByteArray();
+	gifts.stream >> serialized;
+	if (CheckStreamStatus(gifts.stream)) {
+		_owner->session().frogramGifts().applySerialized(serialized);
+	} else {
+		DEBUG_LOG(("Frogram Error: Could not read gift catalog content."));
 	}
 }
 

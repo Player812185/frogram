@@ -161,6 +161,8 @@ public:
 
 	void writeFrogramArchive();
 	void readFrogramArchive();
+	void writeFrogramGifts();
+	void readFrogramGifts();
 
 	void writeSelf();
 
@@ -363,6 +365,7 @@ private:
 	FileKey _inlineBotsDownloadsKey = 0;
 	FileKey _mediaLastPlaybackPositionsKey = 0;
 	FileKey _frogramArchiveKey = 0;
+	FileKey _frogramGiftsKey = 0;
 
 	qint64 _cacheTotalSizeLimit = 0;
 	qint64 _cacheBigFileTotalSizeLimit = 0;
@@ -376,6 +379,7 @@ private:
 	bool _recentHashtagsAndBotsWereRead = false;
 	bool _searchSuggestionsRead = false;
 	bool _frogramArchiveRead = false;
+	bool _frogramGiftsRead = false;
 	bool _inlineBotsDownloadsRead = false;
 	bool _mediaLastPlaybackPositionsRead = false;
 

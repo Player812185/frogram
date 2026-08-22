@@ -53,6 +53,7 @@ class RecentSearches;
 } // namespace Settings
 
 namespace Frogram {
+class GiftCatalog;
 class MessageArchive;
 } // namespace Frogram
 
@@ -167,6 +168,9 @@ public:
 	}
 	[[nodiscard]] Frogram::MessageArchive &frogramArchive() const {
 		return *_frogramArchive;
+	}
+	[[nodiscard]] Frogram::GiftCatalog &frogramGifts() const {
+		return *_frogramGifts;
 	}
 	[[nodiscard]] Data::TopPeers &topPeers() const {
 		return *_topPeers;
@@ -336,6 +340,7 @@ private:
 	const std::unique_ptr<Data::ScheduledMessages> _scheduledMessages;
 	const std::unique_ptr<Data::EphemeralMessages> _ephemeralMessages;
 	const std::unique_ptr<Frogram::MessageArchive> _frogramArchive;
+	const std::unique_ptr<Frogram::GiftCatalog> _frogramGifts;
 	const std::unique_ptr<Data::SponsoredMessages> _sponsoredMessages;
 	const std::unique_ptr<Data::TopPeers> _topPeers;
 	const std::unique_ptr<Data::TopPeers> _topBotApps;

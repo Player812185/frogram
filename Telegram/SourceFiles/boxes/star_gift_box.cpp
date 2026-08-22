@@ -55,6 +55,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_session.h"
 #include "data/data_user.h"
 #include "data/stickers/data_custom_emoji.h"
+#include "frogram/frogram_hidden_gifts.h"
 #include "history/admin_log/history_admin_log_item.h"
 #include "history/view/controls/history_view_suggest_options.h"
 #include "history/view/media/history_view_media_generic.h"
@@ -1891,6 +1892,7 @@ void GiftBox(
 				std::move(my),
 				std::move(tabSelected)),
 		});
+		Frogram::AddHiddenGiftsButton(content, window, peer);
 	}
 }
 

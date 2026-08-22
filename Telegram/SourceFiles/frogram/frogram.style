@@ -1,0 +1,17 @@
+/*
+This file is part of Frogram,
+a modification of Telegram Desktop.
+
+For license and copyright information please follow this link:
+https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
+*/
+using "ui/basic.style";
+
+frogramHiddenGiftSize: 108px;
+frogramHiddenGiftIcon: size(64px, 64px);
+frogramHiddenGiftIconTop: 8px;
+frogramHiddenGiftRadius: 12px;
+frogramHiddenGiftPricePadding: margins(8px, 3px, 8px, 4px);
+frogramHiddenGiftPriceBottom: 8px;
+frogramHiddenGiftSkip: point(10px, 8px);
+frogramHiddenGiftPadding: margins(11px, 4px, 11px, 12px);

@@ -36,3 +36,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_frogram_clear_archive" = "Очистить сохранённые сообщения";
 "lng_frogram_clear_archive_sure" = "Удалить все сохранённые сообщения и историю изменений?";
 "lng_frogram_cleared" = "Архив Frogram очищен.";
+"lng_frogram_hidden_gifts" = "Скрытые подарки";
+"lng_frogram_hidden_gifts_about" = "Сезонные подарки, которые Telegram убирает из каталога после праздника. {name} всё равно может их получить.";
+"lng_frogram_hidden_gift_custom" = "Любой подарок по ID";
+"lng_frogram_hidden_gift_custom_placeholder" = "ID подарка";
+"lng_frogram_hidden_gift_custom_send" = "Отправить этот подарок";
+"lng_frogram_hidden_gift_custom_about" = "Введите числовой ID любого подарка, чтобы отправить его, даже если его нет в каталоге.";
+"lng_frogram_hidden_gift_bad_id" = "Введите корректный ID подарка.";
