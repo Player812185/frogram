@@ -60,13 +60,14 @@ jobs:
       matrix:
         arch: [x64]
         qt: [qt6]
-        generator: [""]
+        generator: [Ninja]
 
     env:
       UPLOAD_ARTIFACT: "true"
       ONLY_CACHE: ${{ inputs.only_cache && 'true' || 'false' }}
       BUILD_CONFIG: Debug
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
+      SCCACHE_GHA_ENABLED: "true"
 
     defaults:
       run:
@@ -127,6 +128,12 @@ jobs:
           arch: ${{ matrix.arch }}
           sdk: ${{ env.SDK }}
           toolset: '14.44'
+
+      - name: Ninja.
+        run: choco install ninja -y --no-progress
+
+      - name: Compiler cache.
+        uses: mozilla-actions/sccache-action@v0.0.11
 
       - name: NuGet sources.
         run: |
@@ -281,8 +288,10 @@ jobs:
           %TDESKTOP_BUILD_ARCH% ^
           ${{ matrix.qt }} ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_CONFIGURATION_TYPES=%BUILD_CONFIG% ^
+          -D CMAKE_BUILD_TYPE=%BUILD_CONFIG% ^
           -D CMAKE_COMPILE_WARNING_AS_ERROR=OFF ^
+          -D CMAKE_C_COMPILER_LAUNCHER=sccache ^
+          -D CMAKE_CXX_COMPILER_LAUNCHER=sccache ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
           -D CMAKE_EXE_LINKER_FLAGS_DEBUG="/INCREMENTAL:NO /DEBUG:NONE" ^
           -D CMAKE_SHARED_LINKER_FLAGS_DEBUG="/INCREMENTAL:NO /DEBUG:NONE" ^
@@ -291,12 +300,17 @@ jobs:
           -D DESKTOP_APP_DISABLE_CRASH_REPORTS=ON ^
           %TDESKTOP_BUILD_DEFINE%
 
-          cmake --build ..\out --config %BUILD_CONFIG% --parallel
+          cmake --build ..\out --parallel
+
+      - name: Compiler cache stats.
+        if: env.ONLY_CACHE == 'false'
+        run: sccache --show-stats
 
       - name: Move artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\%BUILD_CONFIG%
+          set OUT=%TBUILD%\%REPO_NAME%\out
+          if exist %OUT%\%BUILD_CONFIG%\Telegram.exe set OUT=%OUT%\%BUILD_CONFIG%
           mkdir artifact
           move %OUT%\Telegram.exe artifact\Frogram.exe
           if exist %OUT%\Updater.exe move %OUT%\Updater.exe artifact/
