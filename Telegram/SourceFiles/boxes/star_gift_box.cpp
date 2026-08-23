@@ -140,6 +140,7 @@ namespace {
 constexpr auto kPriceTabAll = 0;
 constexpr auto kPriceTabMy = -1;
 constexpr auto kPriceTabCollectibles = -2;
+constexpr auto kPriceTabUnlisted = -3;
 constexpr auto kSentToastDuration = 3 * crl::time(1000);
 constexpr auto kSwitchUpgradeCoverInterval = 3 * crl::time(1000);
 constexpr auto kUpgradeDoneToastDuration = 4 * crl::time(1000);
@@ -884,6 +885,8 @@ void PreviewWrap::paintEvent(QPaintEvent *e) {
 		return simple(tr::lng_gift_stars_tabs_my(tr::now));
 	} else if (price == kPriceTabCollectibles) {
 		return simple(tr::lng_gift_stars_tabs_collectibles(tr::now));
+	} else if (price == kPriceTabUnlisted) {
+		return simple(tr::lng_frogram_hidden_gifts_tab(tr::now));
 	}
 	return {};
 }
@@ -938,6 +941,13 @@ struct GiftPriceTabs {
 	) | rpl::map([=](const std::vector<GiftTypeStars> &gifts) {
 		auto result = std::vector<int>();
 		result.push_back(kPriceTabAll);
+		auto hasUnlisted = false;
+		for (const auto &gift : gifts) {
+			if (gift.unlisted) {
+				hasUnlisted = true;
+				break;
+			}
+		}
 		auto hasCollectibles = false;
 		if (!(disallowed & Api::DisallowedGiftType::Unique)) {
 			for (const auto &gift : gifts) {
@@ -950,6 +960,9 @@ struct GiftPriceTabs {
 		}
 		if (hasMyUnique && !gifts.empty()) {
 			result.push_back(kPriceTabMy);
+		}
+		if (hasUnlisted) {
+			result.push_back(kPriceTabUnlisted);
 		}
 		if (hasCollectibles) {
 			result.push_back(kPriceTabCollectibles);
@@ -1724,6 +1737,9 @@ void AddBlock(
 			}
 
 			const auto pred = [&](const GiftTypeStars &gift) {
+				if (price == kPriceTabUnlisted) {
+					return !gift.unlisted;
+				}
 				// Skip sold out gifts if they're available on resale
 				// (unless we're specifically viewing resale gifts)
 				if (price != kPriceTabCollectibles
@@ -1857,8 +1873,12 @@ void GiftBox(
 		const auto collectibles = content->lifetime().make_state<
 			rpl::variable<bool>
 		>();
+		const auto unlisted = content->lifetime().make_state<
+			rpl::variable<bool>
+		>();
 		auto tabSelected = [=](int tab) {
 			*collectibles = (tab == kPriceTabCollectibles);
+			*unlisted = (tab == kPriceTabUnlisted);
 		};
 		AddBlock(content, window, {
 			.subtitle = (peer->isSelf()
@@ -1866,7 +1886,13 @@ void GiftBox(
 				: peer->isBroadcast()
 				? tr::lng_gift_channel_title()
 				: tr::lng_gift_stars_subtitle()),
-			.about = (peer->isSelf()
+			.about = rpl::conditional(
+				unlisted->value(),
+				tr::lng_frogram_hidden_gifts_about(
+					lt_name,
+					rpl::single(peer->shortName()),
+					tr::marked),
+				peer->isSelf()
 				? tr::lng_gift_self_about(tr::marked)
 				: peer->isBroadcast()
 				? tr::lng_gift_channel_about(
@@ -1884,7 +1910,7 @@ void GiftBox(
 						rpl::single(tr::bold(peer->shortName())),
 						lt_link,
 						tr::lng_gift_stars_link(tr::link),
-						tr::marked))),
+						tr::marked)))),
 			.aboutFilter = starsClickHandlerFilter,
 			.content = MakeStarsGifts(
 				window,
@@ -1892,7 +1918,7 @@ void GiftBox(
 				std::move(my),
 				std::move(tabSelected)),
 		});
-		Frogram::AddHiddenGiftsButton(content, window, peer);
+		Frogram::AddGiftByIdButton(content, window, peer);
 	}
 }
 

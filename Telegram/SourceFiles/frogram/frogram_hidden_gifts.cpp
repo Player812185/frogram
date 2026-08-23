@@ -31,10 +31,6 @@ namespace {
 
 constexpr auto kHiddenGiftStars = int64(50);
 
-[[nodiscard]] QString IconName(uint64 id) {
-	return u"frogram/gifts/%1"_q.arg(id);
-}
-
 [[nodiscard]] Data::StarGift GiftInfo(
 		not_null<Main::Session*> session,
 		uint64 id,
@@ -45,18 +41,6 @@ constexpr auto kHiddenGiftStars = int64(50);
 		.stars = stars,
 		.document = ChatHelpers::GenerateLocalTgsSticker(session, icon),
 	};
-}
-
-[[nodiscard]] auto Descriptors(not_null<Main::Session*> session)
--> std::vector<Info::PeerGifts::GiftDescriptor> {
-	auto result = std::vector<Info::PeerGifts::GiftDescriptor>();
-	result.reserve(HiddenGifts().size());
-	for (const auto &gift : HiddenGifts()) {
-		result.push_back(Info::PeerGifts::GiftTypeStars{
-			.info = GiftInfo(session, gift.id, gift.stars, IconName(gift.id)),
-		});
-	}
-	return result;
 }
 
 void ShowSendBox(
@@ -99,37 +83,14 @@ void SendGiftById(
 	});
 }
 
-void HiddenGiftsBox(
+void GiftByIdBox(
 		not_null<Ui::GenericBox*> box,
 		not_null<Window::SessionController*> window,
 		not_null<PeerData*> peer) {
-	box->setTitle(tr::lng_frogram_hidden_gifts());
-	box->setWidth(st::boxWideWidth);
+	box->setTitle(tr::lng_frogram_hidden_gift_custom());
 	box->addButton(tr::lng_close(), [=] { box->closeBox(); });
 
-	const auto session = &window->session();
 	const auto container = box->verticalLayout();
-
-	Ui::AddSkip(container);
-	Ui::AddDividerText(
-		container,
-		tr::lng_frogram_hidden_gifts_about(
-			lt_name,
-			rpl::single(peer->shortName())));
-
-	container->add(Ui::MakeGiftsList({
-		.window = window,
-		.peer = peer,
-		.gifts = rpl::single(Ui::GiftsDescriptor{
-			Descriptors(session),
-			std::make_shared<Api::PremiumGiftCodeOptions>(peer),
-		}),
-	}));
-
-	Ui::AddDivider(container);
-	Ui::AddSkip(container);
-	Ui::AddSubsectionTitle(container, tr::lng_frogram_hidden_gift_custom());
-
 	const auto field = container->add(
 		object_ptr<Ui::InputField>(
 			container,
@@ -159,6 +120,8 @@ void HiddenGiftsBox(
 	Ui::AddDividerText(
 		container,
 		tr::lng_frogram_hidden_gift_custom_about());
+
+	box->setFocusCallback([=] { field->setFocusFast(); });
 }
 
 } // namespace
@@ -188,13 +151,31 @@ const std::vector<HiddenGift> &HiddenGifts() {
 	return result;
 }
 
-void ShowHiddenGiftsBox(
-		not_null<Window::SessionController*> window,
-		not_null<PeerData*> peer) {
-	window->show(Box(HiddenGiftsBox, window, peer));
+std::vector<Data::StarGift> HiddenGiftInfos(
+		not_null<Main::Session*> session,
+		const base::flat_set<uint64> &known) {
+	auto result = std::vector<Data::StarGift>();
+	result.reserve(HiddenGifts().size());
+	for (const auto &gift : HiddenGifts()) {
+		if (known.contains(gift.id)) {
+			continue;
+		}
+		result.push_back(GiftInfo(
+			session,
+			gift.id,
+			gift.stars,
+			u"frogram/gifts/%1"_q.arg(gift.id)));
+	}
+	return result;
 }
 
-void AddHiddenGiftsButton(
+void ShowGiftByIdBox(
+		not_null<Window::SessionController*> window,
+		not_null<PeerData*> peer) {
+	window->show(Box(GiftByIdBox, window, peer));
+}
+
+void AddGiftByIdButton(
 		not_null<Ui::VerticalLayout*> container,
 		not_null<Window::SessionController*> window,
 		not_null<PeerData*> peer) {
@@ -202,10 +183,10 @@ void AddHiddenGiftsButton(
 	container->add(
 		object_ptr<Ui::SettingsButton>(
 			container,
-			tr::lng_frogram_hidden_gifts(),
+			tr::lng_frogram_hidden_gift_custom(),
 			st::settingsButtonNoIcon)
 	)->setClickedCallback([=] {
-		ShowHiddenGiftsBox(window, peer);
+		ShowGiftByIdBox(window, peer);
 	});
 	Ui::AddSkip(container);
 }

@@ -7,7 +7,13 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #pragma once
 
+#include "data/data_star_gift.h"
+
 class PeerData;
+
+namespace Main {
+class Session;
+} // namespace Main
 
 namespace Ui {
 class VerticalLayout;
@@ -26,11 +32,15 @@ struct HiddenGift {
 
 [[nodiscard]] const std::vector<HiddenGift> &HiddenGifts();
 
-void ShowHiddenGiftsBox(
+[[nodiscard]] std::vector<Data::StarGift> HiddenGiftInfos(
+	not_null<Main::Session*> session,
+	const base::flat_set<uint64> &known);
+
+void ShowGiftByIdBox(
 	not_null<Window::SessionController*> window,
 	not_null<PeerData*> peer);
 
-void AddHiddenGiftsButton(
+void AddGiftByIdButton(
 	not_null<Ui::VerticalLayout*> container,
 	not_null<Window::SessionController*> window,
 	not_null<PeerData*> peer);
