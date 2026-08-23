@@ -288,7 +288,7 @@ jobs:
           %TDESKTOP_BUILD_ARCH% ^
           ${{ matrix.qt }} ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_BUILD_TYPE=%BUILD_CONFIG% ^
+          -DCMAKE_BUILD_TYPE=%BUILD_CONFIG% ^
           -D CMAKE_COMPILE_WARNING_AS_ERROR=OFF ^
           -D CMAKE_C_COMPILER_LAUNCHER=sccache ^
           -D CMAKE_CXX_COMPILER_LAUNCHER=sccache ^
