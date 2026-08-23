@@ -1890,7 +1890,7 @@ void GiftBox(
 				unlisted->value(),
 				tr::lng_frogram_hidden_gifts_about(
 					lt_name,
-					rpl::single(peer->shortName()),
+					rpl::single(tr::bold(peer->shortName())),
 					tr::marked),
 				peer->isSelf()
 				? tr::lng_gift_self_about(tr::marked)
@@ -1910,7 +1910,7 @@ void GiftBox(
 						rpl::single(tr::bold(peer->shortName())),
 						lt_link,
 						tr::lng_gift_stars_link(tr::link),
-						tr::marked)))),
+						tr::marked))),
 			.aboutFilter = starsClickHandlerFilter,
 			.content = MakeStarsGifts(
 				window,
