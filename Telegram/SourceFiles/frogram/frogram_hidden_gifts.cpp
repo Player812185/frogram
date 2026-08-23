@@ -7,30 +7,22 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "frogram/frogram_hidden_gifts.h"
 
-#include "base/random.h"
-#include "core/ui_integration.h"
-#include "data/components/credits.h"
+#include "api/api_premium.h"
+#include "boxes/star_gift_box.h"
+#include "chat_helpers/stickers_lottie.h"
+#include "core/credits_amount.h"
 #include "data/data_peer.h"
+#include "info/peer_gifts/info_peer_gifts_common.h"
 #include "lang/lang_keys.h"
-#include "lottie/lottie_icon.h"
-#include "main/main_app_config.h"
 #include "main/main_session.h"
 #include "payments/payments_checkout_process.h"
-#include "payments/payments_form.h"
-#include "payments/payments_non_panel_process.h"
-#include "ui/abstract_button.h"
 #include "ui/layers/generic_box.h"
-#include "ui/painter.h"
-#include "ui/text/custom_emoji_helper.h"
-#include "ui/text/text_utilities.h"
-#include "ui/ui_utility.h"
 #include "ui/vertical_list.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/fields/input_field.h"
 #include "ui/wrap/vertical_layout.h"
 #include "window/window_session_controller.h"
 #include "styles/style_credits.h"
-#include "styles/style_frogram.h"
 #include "styles/style_layers.h"
 #include "styles/style_settings.h"
 
@@ -39,176 +31,72 @@ namespace {
 
 constexpr auto kHiddenGiftStars = int64(50);
 
-[[nodiscard]] QString IconPath(uint64 id) {
-	return u":/animations/frogram/gifts/%1.tgs"_q.arg(id);
+[[nodiscard]] QString IconName(uint64 id) {
+	return u"frogram/gifts/%1"_q.arg(id);
 }
 
-[[nodiscard]] int MessageLimit(not_null<Main::Session*> session) {
-	return session->appConfig().get<int>(
-		u"stargifts_message_length_max"_q,
-		255);
-}
-
-class GiftTile final : public Ui::AbstractButton {
-public:
-	GiftTile(
-		QWidget *parent,
+[[nodiscard]] Data::StarGift GiftInfo(
 		not_null<Main::Session*> session,
-		const HiddenGift &gift);
-
-private:
-	void paintEvent(QPaintEvent *e) override;
-	void onStateChanged(State was, StateChangeSource source) override;
-
-	std::unique_ptr<Lottie::Icon> _icon;
-	Ui::Text::CustomEmojiHelper _helper;
-	Ui::Text::String _price;
-
-};
-
-GiftTile::GiftTile(
-	QWidget *parent,
-	not_null<Main::Session*> session,
-	const HiddenGift &gift)
-: AbstractButton(parent)
-, _icon(Lottie::MakeIcon({
-	.path = IconPath(gift.id),
-	.sizeOverride = st::frogramHiddenGiftIcon,
-	.frame = 0,
-}))
-, _helper(Core::TextContext({ .session = session })) {
-	_price.setMarkedText(
-		st::semiboldTextStyle,
-		Ui::Text::IconEmoji(&st::starIconEmoji).append(
-			' ' + QString::number(gift.stars)),
-		kMarkupTextOptions,
-		_helper.context());
-	resize(st::frogramHiddenGiftSize, st::frogramHiddenGiftSize);
-	setPointerCursor(true);
-}
-
-void GiftTile::paintEvent(QPaintEvent *e) {
-	auto p = QPainter(this);
-	auto hq = PainterHighQualityEnabler(p);
-
-	const auto radius = st::frogramHiddenGiftRadius;
-	p.setPen(Qt::NoPen);
-	p.setBrush(isOver() ? st::windowBgRipple : st::windowBgOver);
-	p.drawRoundedRect(rect(), radius, radius);
-
-	const auto sticker = st::frogramHiddenGiftIcon;
-	_icon->paintInCenter(p, QRect(
-		(width() - sticker.width()) / 2,
-		st::frogramHiddenGiftIconTop,
-		sticker.width(),
-		sticker.height()));
-
-	const auto padding = st::frogramHiddenGiftPricePadding;
-	const auto inner = _price.maxWidth();
-	const auto buttonw = inner + padding.left() + padding.right();
-	const auto buttonh = st::semiboldTextStyle.font->height
-		+ padding.top()
-		+ padding.bottom();
-	const auto buttonx = (width() - buttonw) / 2;
-	const auto buttony = height()
-		- buttonh
-		- st::frogramHiddenGiftPriceBottom;
-	const auto button = QRect(buttonx, buttony, buttonw, buttonh);
-	p.setBrush(st::creditsBg3);
-	p.drawRoundedRect(button, buttonh / 2., buttonh / 2.);
-
-	p.setPen(st::windowFgActive);
-	_price.draw(p, {
-		.position = QPoint(buttonx + padding.left(), buttony + padding.top()),
-		.availableWidth = inner,
-	});
-}
-
-void GiftTile::onStateChanged(State was, StateChangeSource source) {
-	if (((state() ^ was) & State::Enum::Over) && isOver()) {
-		const auto frames = _icon->framesCount();
-		if (frames > 1) {
-			_icon->animate([=] { update(); }, 0, frames - 1);
-		}
-	}
-}
-
-struct SendOptions {
-	TextWithEntities message;
-	bool anonymous = false;
-};
-
-void SendHiddenGift(
-		not_null<Window::SessionController*> window,
-		not_null<PeerData*> peer,
-		uint64 giftId,
-		SendOptions options) {
-	const auto done = [=](Payments::CheckoutResult result) {
-		if (result == Payments::CheckoutResult::Paid) {
-			window->session().credits().load(true);
-			window->showPeerHistory(peer);
-		}
+		uint64 id,
+		int64 stars,
+		const QString &icon) {
+	return {
+		.id = id,
+		.stars = stars,
+		.document = ChatHelpers::GenerateLocalTgsSticker(session, icon),
 	};
-	Payments::CheckoutProcess::Start(Payments::InvoiceStarGift{
-		.giftId = giftId,
-		.randomId = base::RandomValue<uint64>(),
-		.message = std::move(options.message),
-		.recipient = peer,
-		.anonymous = options.anonymous,
-	}, done, Payments::ProcessNonPanelPaymentFormFactory(window, done));
 }
 
-[[nodiscard]] object_ptr<Ui::RpWidget> MakeTiles(
-		not_null<Window::SessionController*> window,
-		not_null<PeerData*> peer,
-		Fn<SendOptions()> options,
-		Fn<void()> chosen) {
-	auto result = object_ptr<Ui::RpWidget>((QWidget*)nullptr);
-	const auto raw = result.data();
-	const auto session = &window->session();
-
-	struct State {
-		std::vector<not_null<GiftTile*>> tiles;
-	};
-	const auto state = raw->lifetime().make_state<State>();
+[[nodiscard]] auto Descriptors(not_null<Main::Session*> session)
+-> std::vector<Info::PeerGifts::GiftDescriptor> {
+	auto result = std::vector<Info::PeerGifts::GiftDescriptor>();
+	result.reserve(HiddenGifts().size());
 	for (const auto &gift : HiddenGifts()) {
-		const auto id = gift.id;
-		const auto tile = Ui::CreateChild<GiftTile>(raw, session, gift);
-		tile->setClickedCallback([=] {
-			SendHiddenGift(window, peer, id, options());
-			chosen();
+		result.push_back(Info::PeerGifts::GiftTypeStars{
+			.info = GiftInfo(session, gift.id, gift.stars, IconName(gift.id)),
 		});
-		tile->show();
-		state->tiles.push_back(tile);
 	}
+	return result;
+}
 
-	raw->widthValue() | rpl::on_next([=](int width) {
-		const auto padding = st::frogramHiddenGiftPadding;
-		const auto available = width - padding.left() - padding.right();
-		const auto single = st::frogramHiddenGiftSize;
-		const auto skip = st::frogramHiddenGiftSkip;
-		if (available < single) {
+void ShowSendBox(
+		not_null<Window::SessionController*> window,
+		not_null<PeerData*> peer,
+		Data::StarGift info) {
+	window->show(Box(
+		Ui::SendGiftBox,
+		window,
+		peer,
+		std::make_shared<Api::PremiumGiftCodeOptions>(peer),
+		Info::PeerGifts::GiftTypeStars{ .info = std::move(info) },
+		nullptr));
+}
+
+void SendGiftById(
+		not_null<Window::SessionController*> window,
+		not_null<PeerData*> peer,
+		uint64 id) {
+	const auto session = &window->session();
+	const auto weak = base::make_weak(window);
+	Ui::RequestOurForm(window->uiShow(), MTP_inputInvoiceStarGift(
+		MTP_flags(0),
+		peer->input(),
+		MTP_long(id),
+		MTPTextWithEntities()
+	), [=](
+			uint64 formId,
+			CreditsAmount price,
+			std::optional<Payments::CheckoutResult> failure) {
+		const auto strong = weak.get();
+		if (!strong || failure) {
 			return;
 		}
-		const auto perRow = std::max(
-			(available + skip.x()) / (single + skip.x()),
-			1);
-		auto left = padding.left();
-		auto top = padding.top();
-		auto index = 0;
-		for (const auto &tile : state->tiles) {
-			if (index && !(index % perRow)) {
-				left = padding.left();
-				top += single + skip.y();
-			}
-			tile->moveToLeft(left, top, width);
-			left += single + skip.x();
-			++index;
-		}
-		raw->resize(width, top + single + padding.bottom());
-	}, raw->lifetime());
-
-	return result;
+		ShowSendBox(strong, peer, GiftInfo(
+			session,
+			id,
+			price.whole(),
+			u"my_gifts_empty"_q));
+	});
 }
 
 void HiddenGiftsBox(
@@ -222,24 +110,6 @@ void HiddenGiftsBox(
 	const auto session = &window->session();
 	const auto container = box->verticalLayout();
 
-	struct State {
-		Ui::InputField *message = nullptr;
-		Ui::InputField *custom = nullptr;
-		bool anonymous = false;
-	};
-	const auto state = box->lifetime().make_state<State>();
-	const auto options = [=] {
-		const auto &text = state->message->getTextWithTags();
-		return SendOptions{
-			.message = TextWithEntities{
-				text.text,
-				TextUtilities::ConvertTextTagsToEntities(text.tags),
-			},
-			.anonymous = state->anonymous,
-		};
-	};
-	const auto close = [=] { box->closeBox(); };
-
 	Ui::AddSkip(container);
 	Ui::AddDividerText(
 		container,
@@ -247,35 +117,20 @@ void HiddenGiftsBox(
 			lt_name,
 			rpl::single(peer->shortName())));
 
-	container->add(MakeTiles(window, peer, options, close));
+	container->add(Ui::MakeGiftsList({
+		.window = window,
+		.peer = peer,
+		.gifts = rpl::single(Ui::GiftsDescriptor{
+			Descriptors(session),
+			std::make_shared<Api::PremiumGiftCodeOptions>(peer),
+		}),
+	}));
 
-	state->message = container->add(
-		object_ptr<Ui::InputField>(
-			container,
-			st::giftBoxTextField,
-			Ui::InputField::Mode::NoNewlines,
-			tr::lng_gift_send_message()),
-		st::giftBoxTextPadding);
-	state->message->setMaxLength(MessageLimit(session));
-
-	Ui::AddSkip(container);
-	if (!peer->isSelf()) {
-		container->add(
-			object_ptr<Ui::SettingsButton>(
-				container,
-				tr::lng_gift_send_anonymous(),
-				st::settingsButtonNoIcon)
-		)->toggleOn(rpl::single(false))->toggledValue(
-		) | rpl::on_next([=](bool toggled) {
-			state->anonymous = toggled;
-		}, container->lifetime());
-		Ui::AddSkip(container);
-	}
 	Ui::AddDivider(container);
 	Ui::AddSkip(container);
-
 	Ui::AddSubsectionTitle(container, tr::lng_frogram_hidden_gift_custom());
-	state->custom = container->add(
+
+	const auto field = container->add(
 		object_ptr<Ui::InputField>(
 			container,
 			st::giftBoxTextField,
@@ -289,17 +144,17 @@ void HiddenGiftsBox(
 			tr::lng_frogram_hidden_gift_custom_send(),
 			st::settingsButtonNoIcon));
 	send->setClickedCallback([=] {
-		const auto text = state->custom->getLastText().trimmed();
 		auto ok = false;
-		const auto id = text.toULongLong(&ok);
+		const auto id = field->getLastText().trimmed().toULongLong(&ok);
 		if (!ok || !id) {
-			state->custom->showError();
+			field->showError();
 			window->showToast(tr::lng_frogram_hidden_gift_bad_id(tr::now));
 			return;
 		}
-		SendHiddenGift(window, peer, id, options());
-		close();
+		SendGiftById(window, peer, id);
+		box->closeBox();
 	});
+
 	Ui::AddSkip(container);
 	Ui::AddDividerText(
 		container,
