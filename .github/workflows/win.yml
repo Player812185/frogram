@@ -277,10 +277,13 @@ jobs:
       - name: Build cache.
         uses: actions/cache@v4
         with:
-          path: ~/TBuild/${{ env.REPO_NAME }}/out
-          key: build-${{ matrix.arch }}-${{ matrix.qt }}-${{ hashFiles('.github/workflows/win.yml') }}-${{ github.sha }}
+          path: |
+            ~/TBuild/${{ env.REPO_NAME }}/out
+            !~/TBuild/${{ env.REPO_NAME }}/out/**/*.lib
+            !~/TBuild/${{ env.REPO_NAME }}/out/**/*.exe
+          key: build-${{ matrix.arch }}-${{ matrix.qt }}-${{ github.sha }}
           restore-keys: |
-            build-${{ matrix.arch }}-${{ matrix.qt }}-${{ hashFiles('.github/workflows/win.yml') }}-
+            build-${{ matrix.arch }}-${{ matrix.qt }}-
 
       - name: Source timestamps.
         shell: bash
@@ -344,7 +347,13 @@ jobs:
       - name: Build directory size.
         if: env.ONLY_CACHE == 'false'
         shell: bash
-        run: du -sh $TBUILD/$REPO_NAME/out
+        run: |
+          cd $TBUILD/$REPO_NAME/out
+          du -sh .
+          echo "--- largest subdirectories:"
+          du -sh */ 2>/dev/null | sort -h | tail -8
+          echo "--- object files:"
+          du -ch $(find . -name '*.obj' -type f) 2>/dev/null | tail -1
 
       - name: Move artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
