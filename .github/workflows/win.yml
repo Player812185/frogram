@@ -275,7 +275,7 @@ jobs:
           echo "TDESKTOP_BUILD_API=$API" >> $GITHUB_ENV
 
       - name: Build cache.
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/TBuild/${{ env.REPO_NAME }}/out
